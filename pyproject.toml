@@ -3,4 +3,7 @@ name = "drawing-checker"
 version = "0.0.1"
 description = "Приложение для анализа инженерных чертежей в формате PDF"
 requires-python = ">=3.12"
-dependencies = []
+
+dependencies = [
+    "PyMuPDF>=1.28.2",
+]
