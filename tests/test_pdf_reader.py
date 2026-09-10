@@ -31,4 +31,18 @@ def test_extract_text_contains_hole_note():
 def test_extract_text_spans_invalid_page():
     with pytest.raises(IndexError):
         extract_text_spans(TEST_PDF_PATH, page_index=1)
-                
+
+def test_extract_text_span_structure():
+    spans = extract_text_spans(TEST_PDF_PATH)
+
+    first_span = spans[0]
+
+    assert "text" in first_span
+    assert "font" in first_span
+    assert "size" in first_span
+    assert "bbox" in first_span
+    assert len(first_span["bbox"]) == 4
+    assert isinstance(first_span["text"], str)
+    assert isinstance(first_span["font"], str)
+    assert isinstance(first_span["size"], float)
+    assert isinstance(first_span["bbox"], tuple)
