@@ -1,11 +1,14 @@
 
+from os import PathLike
 import pymupdf
-def get_page_count(pdf_path: str) -> int:
+
+
+def get_page_count(pdf_path: str | PathLike) -> int:
     document = pymupdf.open(pdf_path)
     return len(document)
 
 
-def extract_text_spans(pdf_path: str) -> list[dict]:
+def extract_text_spans(pdf_path: str | PathLike) -> list[dict]:
     document = pymupdf.open(pdf_path)
     page = document[0]
     blocks = page.get_text("dict")["blocks"]
