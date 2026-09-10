@@ -1,3 +1,6 @@
 .venv/
 __pycache__/
 desktop.ini
+build/
+dist/
+*.spec
