@@ -3,7 +3,11 @@ import pytest
 
 from pathlib import Path
 
-from app.pdf_reader import extract_text_spans, get_page_count
+from app.pdf_reader import (
+    extract_text_spans,
+    get_page_count,
+    get_page_size,
+)
 
 
 TEST_PDF_PATH = Path(__file__).parent / "fixtures" / "Корпус хабмотора.pdf"
@@ -46,3 +50,9 @@ def test_extract_text_span_structure():
     assert isinstance(first_span["font"], str)
     assert isinstance(first_span["size"], float)
     assert isinstance(first_span["bbox"], tuple)
+
+def test_get_page_size():
+    width, height = get_page_size(TEST_PDF_PATH)
+
+    assert width > 0
+    assert height > 0    

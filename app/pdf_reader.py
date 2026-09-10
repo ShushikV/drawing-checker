@@ -1,6 +1,7 @@
 
-from typing import TypedDict
 from os import PathLike
+from typing import TypedDict
+
 import pymupdf
 
 class TextSpan(TypedDict):
@@ -13,6 +14,13 @@ def get_page_count(pdf_path: str | PathLike) -> int:
     with pymupdf.open(pdf_path) as document:
         return len(document)
 
+def get_page_size(
+    pdf_path: str | PathLike,
+    page_index: int = 0,
+) -> tuple[float, float]:
+    with pymupdf.open(pdf_path) as document:
+        page = document[page_index]
+        return page.rect.width, page.rect.height    
 
 def extract_text_spans(
     pdf_path: str | PathLike,
@@ -40,3 +48,4 @@ def extract_text_spans(
                 )
 
     return spans
+
