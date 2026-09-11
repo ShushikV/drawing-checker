@@ -32,17 +32,52 @@ def main():
         )
         file_name_label.pack(pady=8)
 
-        canvas = tk.Canvas(
-            viewer,
-            background="gray",
-            highlightthickness=0,
-        )
-        canvas.pack(
+        content_frame = tk.Frame(viewer)
+        content_frame.pack(
             fill="both",
             expand=True,
             padx=10,
             pady=10,
         )
+
+        canvas = tk.Canvas(
+            content_frame,
+            background="gray",
+            highlightthickness=0,
+        )
+        canvas.pack(
+            side="left",
+            fill="both",
+            expand=True,
+        )
+
+        error_panel = tk.Frame(
+            content_frame,
+            width=300,
+            relief="sunken",
+            borderwidth=1,
+        )
+        error_panel.pack(
+            side="right",
+            fill="y",
+            padx=(10, 0),
+        )
+
+        error_panel.pack_propagate(False)
+
+        error_title = tk.Label(
+            error_panel,
+            text="Ошибки",
+            font=("Arial", 14, "bold"),
+        )
+        error_title.pack(pady=10)
+
+        empty_label = tk.Label(
+            error_panel,
+            text="Ошибки пока не найдены",
+            wraplength=260,
+        )
+        empty_label.pack(pady=20)
 
         def render_drawing():
             pixmap = render_page(
