@@ -1,6 +1,7 @@
 
 from os import PathLike
 from typing import TypedDict
+from PIL import Image
 
 import pymupdf
 
@@ -49,3 +50,24 @@ def extract_text_spans(
 
     return spans
 
+def render_page(
+    pdf_path: str | PathLike,
+    page_index: int = 0,
+    zoom: float = 1.0,
+) -> pymupdf.Pixmap:
+    with pymupdf.open(pdf_path) as document:
+        page = document[page_index]
+
+        matrix = pymupdf.Matrix(zoom, zoom)
+
+        return page.get_pixmap(
+            matrix=matrix,
+            alpha=False,
+        )
+
+def pixmap_to_image(pixmap: pymupdf.Pixmap) -> Image.Image:
+    return Image.frombytes(
+        "RGB",
+        (pixmap.width, pixmap.height),
+        pixmap.samples,
+    )
