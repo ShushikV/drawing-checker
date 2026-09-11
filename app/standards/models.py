@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 from datetime import date
 from enum import StrEnum
 from math import isfinite
+from pathlib import PurePosixPath, PureWindowsPath
+import re
 
 from app.models import Severity
 from app.standards.errors import NormativeValidationError
@@ -63,6 +65,57 @@ def require_json_object(value, field_name):
     check(value, field_name)
 
 
+def require_positive_int(value, name):
+    if type(value) is not int or value < 1:
+        raise NormativeValidationError(f"{name}: expected a positive integer")
+
+
+@dataclass(frozen=True)
+class SourceProvenance:
+    source_filename: str
+    sha256: str
+    file_size: int
+    page_count: int
+    importer_version: str
+    extraction_engine: str
+    normalizer_version: str
+    clause_extractor_version: str
+    import_record: str
+
+    def __post_init__(self):
+        for name in ("source_filename", "importer_version", "extraction_engine",
+                     "normalizer_version", "clause_extractor_version", "import_record"):
+            require_text(getattr(self, name), name)
+        if any(c in self.source_filename for c in ("/", "\\", ":")) or self.source_filename in (".", ".."):
+            raise NormativeValidationError("source_filename: expected a filename without a path")
+        if not isinstance(self.sha256, str) or re.fullmatch(r"[0-9a-f]{64}", self.sha256) is None:
+            raise NormativeValidationError("sha256: expected 64 lowercase hexadecimal digits")
+        require_positive_int(self.file_size, "file_size")
+        require_positive_int(self.page_count, "page_count")
+        if (PurePosixPath(self.import_record).is_absolute() or PureWindowsPath(self.import_record).drive
+                or "\\" in self.import_record or ".." in PurePosixPath(self.import_record).parts):
+            raise NormativeValidationError("import_record: expected a portable relative path")
+
+
+@dataclass(frozen=True)
+class ClauseSourceSpan:
+    """Half-open Unicode character offsets in one extracted page, not PDF byte offsets."""
+    page: int
+    source_start: int
+    source_end: int
+    normalized_start: int
+    normalized_end: int
+
+    def __post_init__(self):
+        require_positive_int(self.page, "source_spans.page")
+        for name in ("source_start", "source_end", "normalized_start", "normalized_end"):
+            value = getattr(self, name)
+            if type(value) is not int or value < 0:
+                raise NormativeValidationError(f"source_spans.{name}: expected a non-negative integer")
+        if self.source_end <= self.source_start or self.normalized_end <= self.normalized_start:
+            raise NormativeValidationError("source_spans: expected non-empty forward ranges")
+
+
 @dataclass(frozen=True)
 class StandardDocument:
     id: str
@@ -73,6 +126,7 @@ class StandardDocument:
     status: StandardStatus
     effective_date: date | None = None
     metadata: dict[str, object] = field(default_factory=dict)
+    provenance: SourceProvenance | None = None
 
     def __post_init__(self):
         for name in ("id", "title", "designation", "version", "source_path"):
@@ -81,6 +135,10 @@ class StandardDocument:
         if self.effective_date is not None and type(self.effective_date) is not date:
             raise NormativeValidationError("effective_date: expected date or None")
         require_json_object(self.metadata, "metadata")
+        if self.provenance is not None:
+            if not isinstance(self.provenance, SourceProvenance):
+                raise NormativeValidationError("provenance: expected SourceProvenance")
+            self.provenance.__post_init__()
 
 
 @dataclass(frozen=True)
@@ -92,6 +150,9 @@ class StandardClause:
     title: str | None = None
     page: int | None = None
     metadata: dict[str, object] = field(default_factory=dict)
+    normalized_text: str | None = None
+    page_end: int | None = None
+    source_spans: tuple[ClauseSourceSpan, ...] = ()
 
     def __post_init__(self):
         for name in ("id", "document_id", "clause_number", "source_text"):
@@ -101,6 +162,27 @@ class StandardClause:
         if self.page is not None and (type(self.page) is not int or self.page < 1):
             raise NormativeValidationError("page: expected a positive, one-based page number")
         require_json_object(self.metadata, "metadata")
+        if self.normalized_text is not None:
+            require_text(self.normalized_text, "normalized_text")
+        if self.page_end is not None:
+            require_positive_int(self.page_end, "page_end")
+            if self.page is None or self.page_end < self.page:
+                raise NormativeValidationError("page_end: must be >= page")
+        if not isinstance(self.source_spans, tuple) or not all(
+                isinstance(span, ClauseSourceSpan) for span in self.source_spans):
+            raise NormativeValidationError("source_spans: expected a tuple of ClauseSourceSpan")
+        for span in self.source_spans:
+            span.__post_init__()
+        if self.source_spans:
+            pages = [span.page for span in self.source_spans]
+            if pages != sorted(set(pages)):
+                raise NormativeValidationError("source_spans: pages must be unique and increasing")
+            if self.page != pages[0] or self.page_end != pages[-1] or self.normalized_text is None:
+                raise NormativeValidationError("source_spans: page range and normalized_text are required")
+            if len(self.source_text) != sum(s.source_end - s.source_start for s in self.source_spans) + len(pages) - 1:
+                raise NormativeValidationError("source_text: length does not match source_spans")
+            if len(self.normalized_text) != sum(s.normalized_end - s.normalized_start for s in self.source_spans) + len(pages) - 1:
+                raise NormativeValidationError("normalized_text: length does not match source_spans")
 
 
 @dataclass(frozen=True)

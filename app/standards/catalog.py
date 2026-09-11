@@ -36,6 +36,10 @@ class NormativeRegistry:
             if clause.document_id not in self._documents:
                 raise NormativeValidationError(
                     f"clause {clause.id}: unknown document_id {clause.document_id}")
+            provenance = self._documents[clause.document_id].provenance
+            last_page = clause.page_end if clause.page_end is not None else clause.page
+            if provenance is not None and last_page is not None and last_page > provenance.page_count:
+                raise NormativeValidationError(f"clause {clause.id}: page exceeds source page_count")
         for rule in self._rules.values():
             self.validate_rule(rule)
 

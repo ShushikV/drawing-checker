@@ -6,3 +6,10 @@ dist/
 *.spec
 .pytest_cache/
 *.egg-info/
+
+# Local normative sources are not distributable project fixtures.
+/standards/source/*
+!/standards/source/.gitkeep
+!/standards/source/README.md
+/standards/processed/.import-*/
+/standards/processed/.import.lock

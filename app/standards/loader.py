@@ -8,6 +8,7 @@ from app.models import Severity
 from app.standards.errors import NormativeValidationError
 from app.standards.models import (
     AutomationLevel, RuleDefinition, RuleStatus, StandardClause, StandardDocument, StandardStatus,
+    SourceProvenance, ClauseSourceSpan,
 )
 
 
@@ -22,6 +23,15 @@ def _unique_object(pairs):
 
 def _invalid_constant(value):
     raise NormativeValidationError(f"invalid JSON constant: {value}")
+
+
+def _nested_model(data, model, field_name):
+    if not isinstance(data, dict):
+        raise NormativeValidationError(f"{field_name}: expected a JSON object")
+    try:
+        return model(**data)
+    except (TypeError, ValueError) as exc:
+        raise NormativeValidationError(f"{field_name}: {exc}") from exc
 
 
 def _load(path, model, enums=None):
@@ -58,6 +68,13 @@ def _load(path, model, enums=None):
                 data["effective_date"] = parsed
             except (ValueError, TypeError):
                 raise NormativeValidationError("effective_date: expected YYYY-MM-DD") from None
+        if model is StandardDocument and data.get("provenance") is not None:
+            data["provenance"] = _nested_model(data["provenance"], SourceProvenance, "provenance")
+        if model is StandardClause and "source_spans" in data:
+            if not isinstance(data["source_spans"], list):
+                raise NormativeValidationError("source_spans: expected an array")
+            data["source_spans"] = tuple(_nested_model(item, ClauseSourceSpan, "source_spans")
+                                         for item in data["source_spans"])
         return model(**data)
     except (OSError, UnicodeError, ValueError, TypeError) as exc:
         raise NormativeValidationError(f"{path}: {exc}") from exc
