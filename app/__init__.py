@@ -1,0 +1,1 @@
+"""Drawing Checker desktop application."""

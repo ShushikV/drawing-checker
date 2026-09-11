@@ -6,9 +6,26 @@ requires-python = ">=3.12"
 
 dependencies = [
     "PyMuPDF>=1.28.2",
+    "Pillow>=12.3.0",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1.1"]
+
+[project.gui-scripts]
+drawing-checker = "app.main:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
