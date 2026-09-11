@@ -51,7 +51,10 @@ class IssuePanel(tk.Frame):
         text = notice
         if issue is not None:
             references = "\n".join(
-                " — ".join(part for part in (ref.document, ref.section, ref.url) if part)
+                " — ".join(part for part in (
+                    ref.document, ref.section, ref.url,
+                    f"Редакция: {ref.document_version}" if ref.document_version else None,
+                    f"Стр. {ref.page}" if ref.page is not None else None, ref.excerpt) if part)
                 for ref in issue.requirements)
             text = f"{issue.title}\n\n{issue.description}\n\n{notice}"
             if references:

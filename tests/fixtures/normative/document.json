@@ -1,0 +1,10 @@
+{
+  "id": "test.document.v1",
+  "title": "TEST FIXTURE ONLY — not a standard",
+  "designation": "TEST-DOCUMENT",
+  "version": "test-edition-1",
+  "effective_date": "2020-01-01",
+  "source_path": "source/test-only-placeholder.txt",
+  "status": "active",
+  "metadata": {"test_only": true}
+}

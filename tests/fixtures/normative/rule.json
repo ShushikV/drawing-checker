@@ -1,0 +1,15 @@
+{
+  "id": "test.rule.echo",
+  "title": "TEST FIXTURE ONLY — echo rule",
+  "description": "Synthetic bridge test; not an ESKD check.",
+  "category": "test",
+  "standard_document_id": "test.document.v1",
+  "clause_ids": ["test.document.v1.clause-a"],
+  "check_type": "test_echo",
+  "parameters": {"sample_label": "fixture-only", "nested": {"items": [1, 2]}},
+  "automation_level": "deterministic",
+  "status": "active",
+  "severity": "warning",
+  "version": 1,
+  "metadata": {"test_only": true}
+}

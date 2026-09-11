@@ -1,0 +1,9 @@
+{
+  "id": "test.document.v1.clause-a",
+  "document_id": "test.document.v1",
+  "clause_number": "TEST-A",
+  "title": "Test clause",
+  "source_text": "TEST FIXTURE ONLY. This text contains no normative requirements.",
+  "page": 1,
+  "metadata": {"test_only": true}
+}

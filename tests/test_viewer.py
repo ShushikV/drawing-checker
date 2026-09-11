@@ -179,3 +179,18 @@ def test_mixed_page_locations_and_completed_style(root, pdf):
     viewer.select_issue(issue.id)
     assert "Страницы: 3" in viewer.issue_panel.details.get("1.0", "end")
     assert len(viewer.canvas.find_withtag("issue_region")) == 1
+
+
+def test_extended_requirement_reference_is_displayed(root, pdf):
+    reference = RequirementReference("TEST-DOCUMENT", "TEST-A", document_id="test.v1",
+                                     document_version="test-edition", clause_id="test.clause",
+                                     excerpt="Test-only excerpt, no normative requirement", page=7)
+    issue = DrawingIssue("test", "Test reference", "Test only", requirements=(reference,))
+    viewer = PdfViewer(root, pdf, [issue])
+    viewer.select_issue(issue.id)
+    details = viewer.issue_panel.details.get("1.0", "end")
+    assert "TEST-DOCUMENT" in details
+    assert "TEST-A" in details
+    assert "Редакция: test-edition" in details
+    assert "Стр. 7" in details
+    assert reference.excerpt in details

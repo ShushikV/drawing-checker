@@ -50,6 +50,11 @@ class RequirementReference:
     document: str
     section: str | None = None
     url: str | None = None
+    document_id: str | None = None
+    document_version: str | None = None
+    clause_id: str | None = None
+    excerpt: str | None = None
+    page: int | None = None
 
 
 @dataclass
