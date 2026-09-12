@@ -1,7 +1,7 @@
 
 from os import PathLike
 from math import isfinite
-from typing import TypedDict
+from typing import TypedDict, NotRequired
 from PIL import Image
 
 import pymupdf
@@ -11,6 +11,11 @@ class TextSpan(TypedDict):
     font: str
     size: float
     bbox: tuple[float, float, float, float]
+    block_index: NotRequired[int]
+    line_index: NotRequired[int]
+    span_index: NotRequired[int]
+    origin: NotRequired[tuple[float, float]]
+    direction: NotRequired[tuple[float, float]]
 
 
 def get_page_geometry(pdf_path: str | PathLike, page_index: int = 0):
@@ -41,18 +46,23 @@ def extract_text_spans(
 
     spans: list[TextSpan] = []
 
-    for block in blocks:
+    for block_index, block in enumerate(blocks):
         if block.get("type") != 0:
             continue
 
-        for line in block["lines"]:
-            for span in line["spans"]:
+        for line_index, line in enumerate(block["lines"]):
+            for span_index, span in enumerate(line["spans"]):
                 spans.append(
                     {
                         "text": span["text"],
                         "font": span["font"],
                         "size": span["size"],
                         "bbox": span["bbox"],
+                        "block_index": block_index,
+                        "line_index": line_index,
+                        "span_index": span_index,
+                        "origin": span["origin"],
+                        "direction": line["dir"],
                     }
                 )
 

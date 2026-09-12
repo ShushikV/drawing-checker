@@ -3,6 +3,7 @@ from tkinter import filedialog, messagebox
 
 from app.viewer import PdfViewer
 from app.demo_issues import create_demo_issues
+from app.analysis.general_tolerances.runtime import check_drawing
 
 
 def main():
@@ -22,8 +23,12 @@ def main():
             return
 
         try:
-            issues = create_demo_issues(file_path) if demo_mode.get() else []
-            PdfViewer(root, file_path, issues, demo=demo_mode.get())
+            if demo_mode.get():
+                issues, analysis_message = create_demo_issues(file_path), None
+            else:
+                report = check_drawing(file_path)
+                issues, analysis_message = report.issues, report.message
+            PdfViewer(root, file_path, issues, demo=demo_mode.get(), analysis_message=analysis_message)
         except Exception as exc:
             messagebox.showerror("Не удалось открыть PDF", str(exc), parent=root)
             return

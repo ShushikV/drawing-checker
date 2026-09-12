@@ -1,0 +1,17 @@
+{
+  "description": "Project notation specification supplied by the user for stage 6. Not a normative rule or a verified standard. Human source verification is required before creating production RuleDefinition files.",
+  "parameters": {
+    "reference_kinds": ["30893_1_standard", "30893_1_appendix_a_variant_1", "30893_1_appendix_a_variant_2", "30893_2_geometry", "30893_2_combined"],
+    "size_classes": ["f", "m", "c", "v"],
+    "geometry_classes": ["H", "K", "L"],
+    "dash_policy": {"accept_hyphen": true, "accept_en_dash": true, "accept_em_dash": true, "accept_minus_sign": true},
+    "space_policy": {
+      "30893_1_standard": {"keyword_to_number": "required", "before_separator": "required", "after_separator": "required"},
+      "30893_2_geometry": {"keyword_to_number": "required", "before_separator": "forbidden", "after_separator": "forbidden"},
+      "30893_2_combined": {"keyword_to_number": "required", "before_separator": "forbidden", "after_separator": "forbidden", "between_classes": "forbidden"},
+      "30893_1_appendix_a_variant_1": {"keyword_to_number": "required", "before_colon": "forbidden", "after_colon": "required", "after_comma": "required", "plus_minus_to_t": "forbidden", "before_slash": "forbidden", "after_slash": "forbidden"},
+      "30893_1_appendix_a_variant_2": {"keyword_to_number": "required", "before_colon": "forbidden", "after_colon": "required", "after_comma": "required", "plus_to_t": "required", "minus_to_t": "required", "plus_minus_to_t": "forbidden", "before_slash": "forbidden", "after_slash": "forbidden"}
+    },
+    "appendix_a": {"hole": ["H14"], "shaft": ["h14"], "symmetric": ["t2", "IT14"], "unilateral": ["t2"], "denominator": "2"}
+  }
+}

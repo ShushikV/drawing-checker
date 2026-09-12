@@ -11,7 +11,7 @@ from app.issue_panel import IssuePanel
 class PdfViewer(tk.Toplevel):
     """Display the first PDF page with cursor-centered zoom and drag pan."""
 
-    def __init__(self, master, file_path, issues: list[DrawingIssue] | None = None, *, demo=False):
+    def __init__(self, master, file_path, issues: list[DrawingIssue] | None = None, *, demo=False, analysis_message=None):
         super().__init__(master)
         self.withdraw()
         self.title("Drawing Checker — просмотр чертежа")
@@ -22,6 +22,7 @@ class PdfViewer(tk.Toplevel):
         self.active_issue_id = None
         self.page_index = 0
         self.demo = demo
+        self.analysis_message = analysis_message
         self.protocol("WM_DELETE_WINDOW", self.close)
         try:
             if len({issue.id for issue in self.issues}) != len(self.issues):
@@ -65,7 +66,7 @@ class PdfViewer(tk.Toplevel):
         )
 
         error_panel = IssuePanel(content_frame, self.issues, self.select_issue,
-                                 self.toggle_active_issue, demo=self.demo)
+                                 self.toggle_active_issue, demo=self.demo, analysis_message=self.analysis_message)
         self.issue_panel = error_panel
         error_panel.pack(
             side="right",

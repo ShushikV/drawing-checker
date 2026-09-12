@@ -6,13 +6,15 @@ from app.models import IssueStatus
 
 
 class IssuePanel(tk.Frame):
-    def __init__(self, master, issues, on_select, on_toggle, demo=False):
+    def __init__(self, master, issues, on_select, on_toggle, demo=False, analysis_message=None):
         super().__init__(master, width=360, relief="sunken", borderwidth=1)
         self.pack_propagate(False)
         self.issues = issues
         tk.Label(self, text="Замечания", font=("Arial", 14, "bold")).pack(pady=8)
         tk.Label(self, text="ДЕМО — замечания вымышлены" if demo else
                  "Список переданных замечаний", wraplength=340).pack()
+        if analysis_message:
+            tk.Label(self, text=analysis_message, wraplength=340, justify="left").pack(fill="x", padx=8, pady=4)
         list_frame = tk.Frame(self)
         list_frame.pack(fill="both", expand=True, padx=8, pady=8)
         self.tree = ttk.Treeview(list_frame, columns=("severity", "status"),
@@ -35,7 +37,7 @@ class IssuePanel(tk.Frame):
                                 command=on_toggle, state="disabled")
         self.button.pack(fill="x", padx=8, pady=8)
         self.refresh()
-        self.show_details(None, "Выберите замечание." if issues else "Замечаний нет. Проверки не запускались.")
+        self.show_details(None, "Выберите замечание." if issues else analysis_message or "Замечаний нет. Проверки не запускались.")
 
     def refresh(self):
         for number, issue in enumerate(self.issues, 1):
