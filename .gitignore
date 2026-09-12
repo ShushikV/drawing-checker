@@ -13,3 +13,4 @@ dist/
 !/standards/source/README.md
 /standards/processed/.import-*/
 /standards/processed/.import.lock
+/standards/verified/**/.review-*.tmp

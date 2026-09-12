@@ -1,5 +1,6 @@
 """Strict UTF-8 JSON loaders. One entity per file; never execute file contents."""
 from dataclasses import MISSING, fields
+from copy import deepcopy
 from datetime import date
 import json
 from pathlib import Path
@@ -35,10 +36,11 @@ def _nested_model(data, model, field_name):
 
 
 def _load(path, model, enums=None):
-    path = Path(path)
+    label = "<JSON data>" if isinstance(path, dict) else str(path)
     try:
-        data = json.loads(path.read_text(encoding="utf-8-sig"),
-                          object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
+        data = deepcopy(path) if isinstance(path, dict) else json.loads(
+            Path(path).read_text(encoding="utf-8-sig"),
+            object_pairs_hook=_unique_object, parse_constant=_invalid_constant)
         if not isinstance(data, dict):
             raise NormativeValidationError("expected one JSON object per file")
         schema = {item.name: item for item in fields(model)}
@@ -77,7 +79,19 @@ def _load(path, model, enums=None):
                                          for item in data["source_spans"])
         return model(**data)
     except (OSError, UnicodeError, ValueError, TypeError) as exc:
-        raise NormativeValidationError(f"{path}: {exc}") from exc
+        raise NormativeValidationError(f"{label}: {exc}") from exc
+
+
+def document_from_dict(data) -> StandardDocument:
+    if not isinstance(data, dict):
+        raise NormativeValidationError("document: expected a JSON object")
+    return _load(data, StandardDocument, {"status": StandardStatus})
+
+
+def clause_from_dict(data) -> StandardClause:
+    if not isinstance(data, dict):
+        raise NormativeValidationError("clause: expected a JSON object")
+    return _load(data, StandardClause)
 
 
 def load_document(path) -> StandardDocument:

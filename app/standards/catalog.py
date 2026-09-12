@@ -95,6 +95,24 @@ class NormativeRegistry:
     def active_rules(self):
         return self.find_rules(status=RuleStatus.ACTIVE)
 
+    def validate_rule_activation(self, rule_id, verification_service):
+        """Opt-in gate; does not change rule status or existing legacy loading behavior."""
+        rule = self.get_rule(rule_id)
+        self.validate_rule(rule)
+        document = self.get_document(rule.standard_document_id)
+        if document.status != StandardStatus.ACTIVE:
+            raise NormativeValidationError("activation requires an active standard document")
+        if not self.clauses_loaded or not rule.clause_ids:
+            raise NormativeValidationError("strict activation requires explicit verified clause references")
+        revisions = []
+        for clause_id in rule.clause_ids:
+            try:
+                revisions.append(verification_service.require_verified(
+                    clause_id, document=document, clause=self.get_clause(clause_id)))
+            except ValueError as exc:
+                raise NormativeValidationError(f"rule {rule_id}: {exc}") from exc
+        return tuple(revisions)
+
     @classmethod
     def from_files(cls, *, document_files, rule_files=(), clause_files=None):
         """Load everything before publishing the registry; paths appear in errors."""
